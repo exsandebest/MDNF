@@ -26,12 +26,10 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
-    findmdnfclass.cpp
+        mainwindow.cpp
 
 HEADERS += \
-        mainwindow.h \
-    findmdnfclass.h
+        mainwindow.h
 
 FORMS += \
         mainwindow.ui

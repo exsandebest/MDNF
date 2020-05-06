@@ -2,9 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTableWidget>
-#include <findmdnfclass.h>
-#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -19,19 +16,17 @@ public:
     ~MainWindow();
     void buildTable();
     Ui::MainWindow *ui;
+    void certainMDNF();
+    void findMDNF(int, QStringList, int, int);
 
 signals:
     void mySignal();
 
 private slots:
     void on_btnApply_clicked();
-
     void on_btnApply2_clicked();
     void changeCellValue(int row, int col);
 
-
-private:
-QThread * thread;
 };
 
 #endif // MAINWINDOW_H

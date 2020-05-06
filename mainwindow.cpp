@@ -1,34 +1,25 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QGridLayout>
-#include <QPushButton>
-#include <QLabel>
 #include <QTableWidget>
 #include <QMap>
-#include <QDebug>
-#include <QSpacerItem>
 #include <QMessageBox>
-#include <QObject>
-#include <QtConcurrent/QtConcurrent>
-#include <QFuture>
-#include <QtConcurrent/QtConcurrentRun>
-#include <QThreadPool>
-#include <findmdnfclass.h>
 #include <QMovie>
-Ui::MainWindow * extUi;
-findMDNFClass * FMDNFC;
+
 int varCount = 3;
 int needOnes = 0;
+int minLen = 1000000000;
+QString currentFunction = "00000000";
+QString varLbl[6] = {"a","b","c","d","e","f"};
+
+
 QMap <int, QStringList> headMap;
 QMap <int, QStringList> banned;
 QMap <int, QMap <QString, QList<int> > > accepted; // col, set, rows
 QMap <int, int> selectedOnes; //row, bool
 QMap <int, QMap <QString, bool> > selectedSets;  // col, str, bool
-int minLen = 1000000000;
-QString varLbl[6] = {"a","b","c","d","e","f"};
 QMap <QString, int> assoc;
 QMap <int, QList <QStringList> >answers;
-QString currentFunction = "00000000";
+
 
 
 bool isBanned(int x, QString s){
@@ -114,15 +105,15 @@ void updateVarCount(int x) {
 QStringList getSimpleColumn(QString s){
     int x = assoc[s];
     QStringList ans;
-   while(ans.length() < varCountp2){
-       for (int i = 0; i < pow(2,x); ++i){
-           ans<<"0";
-       }
-       for(int i = 0; i < pow(2,x); ++i){
-           ans<<"1";
-       }
-   }
-   return ans;
+    while(ans.length() < varCountp2){
+        for (int i = 0; i < pow(2,x); ++i){
+            ans<<"0";
+        }
+        for(int i = 0; i < pow(2,x); ++i){
+            ans<<"1";
+        }
+    }
+    return ans;
 }
 
 QStringList getColumn(QString s){
@@ -169,7 +160,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    extUi = ui;
     QStringList tmpList;
     tmpList << "a";
     headMap[1] = tmpList;
@@ -188,7 +178,6 @@ MainWindow::MainWindow(QWidget *parent) :
     tmpList.clear();
     tmpList << "a" << "b" << "c" << "d" << "e" << "f" /**/<< "ab" << "ac" << "ad" <<"ae" << "af" << "bc" <<"bd" << "be" << "bf" << "cd" << "ce" << "cf" << "de" << "df" << "ef"/**/ << "abc" << "abd" << "abe" << "abf" << "acd" << "ace" << "acf" << "ade" << "adf" << "aef" << "bcd" << "bce" << "bcf" << "bde" << "bdf" << "bef" << "cde" << "cdf" << "cef" << "def"/**/ << "abcd" << "abce" << "abcf" <<"abde" << "abdf" << "abef" << "acde" <<"acdf" << "acef" << "adef" << "bcde" << "bcdf" << "bcef" << "bdef" << "cdef" << "abcde" << "abcdf" << "abcef" << "abdef" << "acdef" << "bcdef" << "abcdef";
     headMap[6] = tmpList;
-    qDebug() << tmpList.length();
     tmpList.clear();
     this->showMaximized();
     ui->r1->setChecked(true);
@@ -196,14 +185,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spinBoxVarCount->setValue(varCount);
     QObject :: connect(ui->mainTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(changeCellValue(int, int)));
     buildTable();
-   // thread = new QThread(this);
-    FMDNFC = new findMDNFClass();
-   /* FMDNFC->moveToThread(thread);
-    QObject::connect(thread, &QThread::finished, FMDNFC, &QObject::deleteLater);
-    QObject::connect(this, &MainWindow::mySignal , FMDNFC, &findMDNFClass::certainMDNF);
-    thread->start();*/
-
-   FMDNFC->certainMDNF();
+    certainMDNF();
 }
 
 
@@ -221,10 +203,6 @@ void MainWindow::changeCellValue(int row, int col){
 void MainWindow::buildTable(){
     QTableWidget * table = ui->mainTable;
     int tmpColumnCount = table->columnCount();
-
-    //ui->funcNumberInput1->setText(currentFunction);
-  // ui->funcNumberInput2->setText(get10from2(currentFunction));
-
     for(int i = 0; i < tmpColumnCount; ++i){
         table->removeColumn(0);
         table->removeRow(0);
@@ -233,13 +211,9 @@ void MainWindow::buildTable(){
         table->insertRow(i);
         table->insertColumn(i);
     }
-
     QTableWidgetItem * item = new QTableWidgetItem();
     item->setText("f(x)");
     table->setHorizontalHeaderItem(0,item);
-
-
-
     for(int i = 0; i < varCountp2; ++i){
         QTableWidgetItem * itm = new QTableWidgetItem();
         itm->setText(QString(currentFunction[i]));
@@ -247,13 +221,11 @@ void MainWindow::buildTable(){
         itm->setTextAlignment(Qt::AlignCenter);
         table->setItem(i,0,itm);
     }
-
     for (int i = 1; i < varCountp2; ++i){
         QTableWidgetItem * itm = new QTableWidgetItem();
         itm->setText(headMap[varCount][i-1]);
         table->setHorizontalHeaderItem(i,itm);
     }
-
     for (int j = 1; j < varCountp2; ++j){
         QString hed = headMap[varCount][j-1];
         QStringList column = getColumn(hed);
@@ -266,22 +238,19 @@ void MainWindow::buildTable(){
             table->setItem(i,j,itm);
         }
     }
-
-
     for (int i =0 ; i <varCountp2; ++i){
         QTableWidgetItem * itm = table->item(i,0);
         if (itm->text() == "0"){
             for (int j = 1; j < varCountp2; ++j){
                 QCoreApplication::processEvents();
-               QTableWidgetItem * tmpItm = table->item(i,j);
-               tmpItm->setBackgroundColor(QColor(255, 0, 0, 140));
-               if (!isBanned(j, tmpItm->text())){
-                   banned[j] << tmpItm->text();
-               }
+                QTableWidgetItem * tmpItm = table->item(i,j);
+                tmpItm->setBackground(QColor(255, 0, 0, 140));
+                if (!isBanned(j, tmpItm->text())){
+                    banned[j] << tmpItm->text();
+                }
             }
         }
     }
-
     for (int i =0 ; i <varCountp2; ++i){
         QTableWidgetItem * itm = table->item(i,0);
         if (itm->text() == "1"){
@@ -289,19 +258,89 @@ void MainWindow::buildTable(){
             selectedOnes[i+1] = false;
             for (int j = 1; j < varCountp2; ++j){
                 QCoreApplication::processEvents();
-               QTableWidgetItem * tmpItm = table->item(i,j);
-               if(isBanned(j,tmpItm->text())){
-                   tmpItm->setBackgroundColor(QColor(0,0,225,127));
-               } else {
-                   tmpItm->setBackgroundColor(QColor(0,225,0,127));
-                   accepted[j][tmpItm->text()] << i+1;
-               }
+                QTableWidgetItem * tmpItm = table->item(i,j);
+                if(isBanned(j,tmpItm->text())){
+                    tmpItm->setBackground(QColor(0,0,225,127));
+                } else {
+                    tmpItm->setBackground(QColor(0,225,0,127));
+                    accepted[j][tmpItm->text()] << i+1;
+                }
             }
         }
     }
-
-
 }
+
+
+void MainWindow::findMDNF(int curLen, QStringList curDNF, int idx, int ones){
+    if(ones == needOnes) {
+        if (curLen <= minLen){
+            minLen = curLen;
+            curDNF.sort();
+            if (checkDubl(curDNF)){
+                answers[curLen] << curDNF;
+            }
+        }
+        return;
+    }
+    QCoreApplication::processEvents();
+    int tmpIdx = 0;
+    for (int i = 1; i < varCountp2; ++i){ //col
+        foreach (QString key, accepted[i].keys()){
+            if(tmpIdx++ < idx) continue;
+            if(isOverlapped(i,key)) continue;
+            if(curLen+key.length() > minLen){
+                return;
+            }
+            bool * ssik = &selectedSets[i][key];
+            QList<int> * aik = &accepted[i][key];
+            if (!*ssik){
+                *ssik = true;
+                for (int j = 0; j <(*aik).length(); ++j){
+                    if (selectedOnes[(*aik)[j]]==0) ++ones;
+                    selectedOnes[(*aik)[j]] +=1;
+                }
+                QString hed = headMap[varCount][i-1];
+                curDNF << getTerm(hed,key);
+                findMDNF(curLen+key.length(), curDNF, idx+1, ones);
+                curDNF.removeLast();
+                *ssik = false;
+                for (int j = 0; j < (*aik).length(); ++j){
+                    selectedOnes[(*aik)[j]] -=1;
+                    if (selectedOnes[(*aik)[j]] == 0){
+                        --ones;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void MainWindow::certainMDNF(){
+    QTextBrowser * lbl = ui->lblAns;
+    QLabel * lblGif = ui->lblGif;
+    QMovie * mov = new QMovie(":img/loading.gif");
+    lblGif->setMovie(mov);
+    mov->start();
+    lbl->setText("Загрузка...");
+    QStringList garbageList;
+    findMDNF(0, garbageList,0, 0);
+
+
+    QString s1, s2;
+    s1.setNum(minLen);
+    s2.setNum(answers[minLen].length());
+    if (minLen == 0){
+        s2.setNum(0);
+    }
+    QString strr = "Длина: " + s1 + "    Кол-во: "+s2+"\n";
+    for (int i = 0; i < answers[minLen].length(); ++i){
+        strr += answers[minLen][i].join(" v ") + "\n";
+    }
+    lbl->setText(strr);
+    lblGif->clear();
+}
+
 
 
 
@@ -315,29 +354,27 @@ MainWindow::~MainWindow()
 void MainWindow::on_btnApply_clicked()
 {
     int tmpVarCount = ui->spinBoxVarCount->value();
-
     QString stringInput;
     if(ui->r1->isChecked()){
-       stringInput = ui->funcNumberInput1->text();
-       if (!QRegExp("[10]*").exactMatch(stringInput)){
-           QMessageBox::about(this, "Warning!", "Некорректное значение");
-           return;
-       }
-       for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
-           stringInput = "0"+stringInput;
-       }
-       ui->funcNumberInput2->setText("");
-     //  stringInput = reverse(stringInput);
+        stringInput = ui->funcNumberInput1->text();
+        if (!QRegExp("[10]*").exactMatch(stringInput)){
+            QMessageBox::about(this, "Warning!", "Некорректное значение");
+            return;
+        }
+        for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
+            stringInput = "0"+stringInput;
+        }
+        ui->funcNumberInput2->setText("");
     } else if (ui->r2->isChecked()){
-       stringInput = get2from10(ui->funcNumberInput2->text());
-       if (!QRegExp("[0-9]*").exactMatch(stringInput)){
-           QMessageBox::about(this, "Warning!", "Некорректное значение");
-           return;
-       }
-       for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
-           stringInput = "0"+stringInput;
-       }
-       ui->funcNumberInput1->setText("");
+        stringInput = get2from10(ui->funcNumberInput2->text());
+        if (!QRegExp("[0-9]*").exactMatch(stringInput)){
+            QMessageBox::about(this, "Warning!", "Некорректное значение");
+            return;
+        }
+        for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
+            stringInput = "0"+stringInput;
+        }
+        ui->funcNumberInput1->setText("");
     }
     if(stringInput == currentFunction){
         return;
@@ -347,7 +384,6 @@ void MainWindow::on_btnApply_clicked()
         return;
     }
     updateVarCount(tmpVarCount);
-    qDebug() << stringInput;
     minLen = 1000000000;
     answers.clear();
     needOnes = 0;
@@ -357,8 +393,7 @@ void MainWindow::on_btnApply_clicked()
     banned.clear();
     currentFunction = stringInput;
     buildTable();
-     FMDNFC = new findMDNFClass();
-     FMDNFC->certainMDNF();
+    certainMDNF();
 }
 
 void MainWindow::on_btnApply2_clicked()
@@ -380,13 +415,7 @@ void MainWindow::on_btnApply2_clicked()
     banned.clear();
     currentFunction = str;
     buildTable();
-    // thread = new QThread(this);
-     FMDNFC = new findMDNFClass();
-    /* FMDNFC->moveToThread(thread);
-     QObject::connect(thread, &QThread::finished, FMDNFC, &QObject::deleteLater);
-     QObject::connect(this, &MainWindow::mySignal , FMDNFC, &findMDNFClass::certainMDNF);
-     thread->start();*/
-     FMDNFC->certainMDNF();
+    certainMDNF();
 }
 
 
