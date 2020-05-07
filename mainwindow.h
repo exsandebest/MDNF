@@ -18,7 +18,7 @@ public:
     Ui::MainWindow *ui;
     void certainMDNF();
     void findMDNF(int, QStringList, int, int);
-    bool checkDubl(QStringList);
+    bool checkDuplicates(QStringList);
     bool isBanned(int, QString);
     bool isOverlapped(int, QString);
     QString reverse(QString);
@@ -26,6 +26,10 @@ public:
     void updateVarCount(int);
     QStringList getSimpleColumn(QString);
     QStringList getColumn(QString);
+    QString get2from10(QString);
+    QString get10from2(QString);
+    void setOriginalState();
+    void MDNF();
 
 signals:
     void mySignal();

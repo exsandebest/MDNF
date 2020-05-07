@@ -9,7 +9,7 @@
 int varCount = 3;
 int needOnes = 0;
 int minLen = 1000000000;
-int varCountp2 = pow(2, varCount);
+int varCountP2 = pow(2, varCount);
 QString currentFunction = "00000000";
 QString varLbl[6] = {"a","b","c","d","e","f"};
 
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tmpList << "a" << "b" << "c" << "ab" << "ac" << "bc" << "abc";
     headMap[3] = tmpList;
     tmpList.clear();
-    tmpList << "a" << "b" << "c" << "d" << "ab" << "ac" << "ad" <<"bc" <<"bd" << "cd" << "abc"<<"abd"<<"acd"<<"bcd"<<"abcd";
+    tmpList << "a" << "b" << "c" << "d" << "ab" << "ac" << "ad" <<"bc" <<"bd" << "cd" << "abc" << "abd" << "acd" << "bcd" << "abcd";
     headMap[4] = tmpList;
     tmpList.clear();
     tmpList << "a" << "b" << "c" << "d" << "e" << "ab" << "ac" << "ad" << "ae" << "bc" << "bd" << "be" << "cd" << "ce" << "de" << "abc" << "abd" << "abe" << "acd" << "ace" << "ade" <<"bcd" << "bce" <<"bde" << "cde" << "abcd" <<"abce" << "abde" << "acde" << "bcde" << "abcde";
@@ -51,8 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateVarCount(varCount);
     ui->spinBoxVarCount->setValue(varCount);
     QObject :: connect(ui->mainTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(changeCellValue(int, int)));
-    buildTable();
-    certainMDNF();
+    MDNF();
 }
 
 
@@ -78,6 +77,20 @@ bool MainWindow::isOverlapped (int col, QString set){
     return true;
 }
 
+void MainWindow::setOriginalState(){
+    minLen = 1000000000;
+    answers.clear();
+    needOnes = 0;
+    selectedOnes.clear();
+    selectedSets.clear();
+    accepted.clear();
+    banned.clear();
+}
+
+void MainWindow::MDNF(){
+    buildTable();
+    certainMDNF();
+}
 
 QString MainWindow::reverse(QString s){
     QString ans = "";
@@ -87,7 +100,7 @@ QString MainWindow::reverse(QString s){
     return ans;
 }
 
-bool MainWindow::checkDubl(QStringList list){
+bool MainWindow::checkDuplicates(QStringList list){
     int flag;
     for (int i = 0; i < answers[minLen].length(); ++i){
         flag = 1;
@@ -116,7 +129,7 @@ QString MainWindow::getTerm(QString head, QString val){
 
 void MainWindow::updateVarCount(int x) {
     varCount = x;
-    varCountp2 = pow(2,x);
+    varCountP2 = pow(2,x);
     for(int i = 0; i < x; ++i){
         assoc[varLbl[i]] = x-i-1;
     }
@@ -126,7 +139,7 @@ void MainWindow::updateVarCount(int x) {
 QStringList MainWindow::getSimpleColumn(QString s){
     int x = assoc[s];
     QStringList ans;
-    while(ans.length() < varCountp2){
+    while(ans.length() < varCountP2){
         for (int i = 0; i < pow(2,x); ++i){
             ans<<"0";
         }
@@ -139,12 +152,12 @@ QStringList MainWindow::getSimpleColumn(QString s){
 
 QStringList MainWindow::getColumn(QString s){
     QStringList ans;
-    for (int i = 0; i < varCountp2; ++i){
+    for (int i = 0; i < varCountP2; ++i){
         ans << "";
     }
     for(int i = 0; i < s.length(); ++i){
         QStringList tmpColumn = getSimpleColumn(QString(s[i]));
-        for (int j = 0; j < varCountp2; ++j){
+        for (int j = 0; j < varCountP2; ++j){
             ans[j]+=tmpColumn[j];
         }
     }
@@ -193,26 +206,26 @@ void MainWindow::buildTable(){
         table->removeColumn(0);
         table->removeRow(0);
     }
-    for (int i = 0; i < varCountp2; ++i){
+    for (int i = 0; i < varCountP2; ++i){
         table->insertRow(i);
         table->insertColumn(i);
     }
     QTableWidgetItem * item = new QTableWidgetItem();
     item->setText("f(x)");
     table->setHorizontalHeaderItem(0,item);
-    for(int i = 0; i < varCountp2; ++i){
+    for(int i = 0; i < varCountP2; ++i){
         QTableWidgetItem * itm = new QTableWidgetItem();
         itm->setText(QString(currentFunction[i]));
         itm->setFlags(Qt::ItemIsEnabled);
         itm->setTextAlignment(Qt::AlignCenter);
         table->setItem(i,0,itm);
     }
-    for (int i = 1; i < varCountp2; ++i){
+    for (int i = 1; i < varCountP2; ++i){
         QTableWidgetItem * itm = new QTableWidgetItem();
         itm->setText(headMap[varCount][i-1]);
         table->setHorizontalHeaderItem(i,itm);
     }
-    for (int j = 1; j < varCountp2; ++j){
+    for (int j = 1; j < varCountP2; ++j){
         QString hed = headMap[varCount][j-1];
         QStringList column = getColumn(hed);
         for (int i = 0; i < column.length(); ++i){
@@ -224,10 +237,10 @@ void MainWindow::buildTable(){
             table->setItem(i,j,itm);
         }
     }
-    for (int i =0 ; i <varCountp2; ++i){
+    for (int i =0 ; i <varCountP2; ++i){
         QTableWidgetItem * itm = table->item(i,0);
         if (itm->text() == "0"){
-            for (int j = 1; j < varCountp2; ++j){
+            for (int j = 1; j < varCountP2; ++j){
                 QCoreApplication::processEvents();
                 QTableWidgetItem * tmpItm = table->item(i,j);
                 tmpItm->setBackground(QColor(255, 0, 0, 140));
@@ -237,12 +250,12 @@ void MainWindow::buildTable(){
             }
         }
     }
-    for (int i =0 ; i <varCountp2; ++i){
+    for (int i =0 ; i <varCountP2; ++i){
         QTableWidgetItem * itm = table->item(i,0);
         if (itm->text() == "1"){
             ++needOnes;
             selectedOnes[i+1] = false;
-            for (int j = 1; j < varCountp2; ++j){
+            for (int j = 1; j < varCountP2; ++j){
                 QCoreApplication::processEvents();
                 QTableWidgetItem * tmpItm = table->item(i,j);
                 if(isBanned(j,tmpItm->text())){
@@ -262,7 +275,7 @@ void MainWindow::findMDNF(int curLen, QStringList curDNF, int idx, int ones){
         if (curLen <= minLen){
             minLen = curLen;
             curDNF.sort();
-            if (checkDubl(curDNF)){
+            if (checkDuplicates(curDNF)){
                 answers[curLen] << curDNF;
             }
         }
@@ -270,7 +283,7 @@ void MainWindow::findMDNF(int curLen, QStringList curDNF, int idx, int ones){
     }
     QCoreApplication::processEvents();
     int tmpIdx = 0;
-    for (int i = 1; i < varCountp2; ++i){ //col
+    for (int i = 1; i < varCountP2; ++i){ //col
         foreach (QString key, accepted[i].keys()){
             if(tmpIdx++ < idx) continue;
             if(isOverlapped(i,key)) continue;
@@ -359,38 +372,24 @@ void MainWindow::on_btnApply_clicked()
         return;
     }
     updateVarCount(tmpVarCount);
-    minLen = 1000000000;
-    answers.clear();
-    needOnes = 0;
-    selectedOnes.clear();
-    selectedSets.clear();
-    accepted.clear();
-    banned.clear();
+    setOriginalState();
     currentFunction = stringInput;
-    buildTable();
-    certainMDNF();
+    MDNF();
 }
 
 void MainWindow::on_btnApply2_clicked()
 {
     QString str = "";
-    for (int i = 0; i < varCountp2; ++i){
+    for (int i = 0; i < varCountP2; ++i){
         QString s = ui->mainTable->item(i,0)->text();
         str+=s;
     }
     if (str == currentFunction){
         return;
     }
-    minLen = 1000000000;
-    answers.clear();
-    needOnes = 0;
-    selectedOnes.clear();
-    selectedSets.clear();
-    accepted.clear();
-    banned.clear();
+    setOriginalState();
     currentFunction = str;
-    buildTable();
-    certainMDNF();
+    MDNF();
 }
 
 
