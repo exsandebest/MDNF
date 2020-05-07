@@ -4,13 +4,14 @@
 #include <QMap>
 #include <QMessageBox>
 #include <QMovie>
+#include <qmath.h>
 
 int varCount = 3;
 int needOnes = 0;
 int minLen = 1000000000;
+int varCountp2 = pow(2, varCount);
 QString currentFunction = "00000000";
 QString varLbl[6] = {"a","b","c","d","e","f"};
-
 
 QMap <int, QStringList> headMap;
 QMap <int, QStringList> banned;
@@ -19,140 +20,6 @@ QMap <int, int> selectedOnes; //row, bool
 QMap <int, QMap <QString, bool> > selectedSets;  // col, str, bool
 QMap <QString, int> assoc;
 QMap <int, QList <QStringList> >answers;
-
-
-
-bool isBanned(int x, QString s){
-    if (banned[x].indexOf(s) != -1) {
-        return true;
-    }
-    return  false;
-}
-
-bool isOverlapped (int col, QString set){
-    for (int i = 0; i < accepted[col][set].length(); ++i){
-        if (!selectedOnes[accepted[col][set][i]]){
-            return false;
-        }
-    }
-    return true;
-}
-
-
-QString reverse(QString s){
-    QString ans = "";
-    for (int i = s.length()-1; i>=0; --i){
-        ans+=s[i];
-    }
-    return ans;
-}
-
-bool checkDubl(QStringList list){
-    int flag;
-    for (int i = 0; i < answers[minLen].length(); ++i){
-        flag = 1;
-        for (int j = 0; j < list.length(); ++j){
-            if (answers[minLen][i][j] != list[j]){
-                flag = 0;
-            }
-        }
-        if (flag) return false;
-    }
-    return true;
-}
-
-int pow(int a, int n){
-    if (!n) return 1;
-    int ans = a;
-    for (int i = 0; i <n-1; ++i){
-        ans *= a;
-    }
-    return ans;
-}
-
-
-int varCountp2 = pow(2,varCount);
-
-
-QString getTerm(QString head, QString val){
-    QString ans;
-    for (int i = 0; i < val.length(); ++i){
-        if(val[i] == "1"){
-            ans+=head[i];
-        } else {
-            ans+="!"+head[i];
-        }
-    }
-    return ans;
-}
-
-
-
-void updateVarCount(int x) {
-    varCount = x;
-    varCountp2 = pow(2,x);
-    for(int i = 0; i < x; ++i){
-        assoc[varLbl[i]] = x-i-1;
-    }
-}
-
-
-
-
-
-
-
-QStringList getSimpleColumn(QString s){
-    int x = assoc[s];
-    QStringList ans;
-    while(ans.length() < varCountp2){
-        for (int i = 0; i < pow(2,x); ++i){
-            ans<<"0";
-        }
-        for(int i = 0; i < pow(2,x); ++i){
-            ans<<"1";
-        }
-    }
-    return ans;
-}
-
-QStringList getColumn(QString s){
-    QStringList ans;
-    for (int i = 0; i < varCountp2; ++i){
-        ans << "";
-    }
-    for(int i = 0; i < s.length(); ++i){
-        QStringList tmpColumn = getSimpleColumn(QString(s[i]));
-        for (int j = 0; j < varCountp2; ++j){
-            ans[j]+=tmpColumn[j];
-        }
-    }
-    return ans;
-}
-
-
-QString get2from10(QString s){
-    long long num = s.toLongLong();
-    QString ans ="";
-    while (num!=0){
-        QString s1;
-        s1.setNum(num%2);
-        ans = s1+ans;
-        num/=2;
-    }
-    return ans;
-}
-
-QString get10from2 (QString s){
-    long long ansNum = 0;
-    for (int i = s.length()-1; i>=0; --i){
-        ansNum+=(QString(s[i]).toInt())*pow(2,i);
-    }
-    QString ansStr;
-    ansStr.setNum(ansNum);
-    return ansStr;
-}
-
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -176,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tmpList << "a" << "b" << "c" << "d" << "e" << "ab" << "ac" << "ad" << "ae" << "bc" << "bd" << "be" << "cd" << "ce" << "de" << "abc" << "abd" << "abe" << "acd" << "ace" << "ade" <<"bcd" << "bce" <<"bde" << "cde" << "abcd" <<"abce" << "abde" << "acde" << "bcde" << "abcde";
     headMap[5] = tmpList;
     tmpList.clear();
-    tmpList << "a" << "b" << "c" << "d" << "e" << "f" /**/<< "ab" << "ac" << "ad" <<"ae" << "af" << "bc" <<"bd" << "be" << "bf" << "cd" << "ce" << "cf" << "de" << "df" << "ef"/**/ << "abc" << "abd" << "abe" << "abf" << "acd" << "ace" << "acf" << "ade" << "adf" << "aef" << "bcd" << "bce" << "bcf" << "bde" << "bdf" << "bef" << "cde" << "cdf" << "cef" << "def"/**/ << "abcd" << "abce" << "abcf" <<"abde" << "abdf" << "abef" << "acde" <<"acdf" << "acef" << "adef" << "bcde" << "bcdf" << "bcef" << "bdef" << "cdef" << "abcde" << "abcdf" << "abcef" << "abdef" << "acdef" << "bcdef" << "abcdef";
+    tmpList << "a" << "b" << "c" << "d" << "e" << "f" << "ab" << "ac" << "ad" <<"ae" << "af" << "bc" <<"bd" << "be" << "bf" << "cd" << "ce" << "cf" << "de" << "df" << "ef" << "abc" << "abd" << "abe" << "abf" << "acd" << "ace" << "acf" << "ade" << "adf" << "aef" << "bcd" << "bce" << "bcf" << "bde" << "bdf" << "bef" << "cde" << "cdf" << "cef" << "def" << "abcd" << "abce" << "abcf" <<"abde" << "abdf" << "abef" << "acde" <<"acdf" << "acef" << "adef" << "bcde" << "bcdf" << "bcef" << "bdef" << "cdef" << "abcde" << "abcdf" << "abcef" << "abdef" << "acdef" << "bcdef" << "abcdef";
     headMap[6] = tmpList;
     tmpList.clear();
     this->showMaximized();
@@ -186,6 +53,125 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject :: connect(ui->mainTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(changeCellValue(int, int)));
     buildTable();
     certainMDNF();
+}
+
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+bool MainWindow::isBanned(int x, QString s){
+    if (banned[x].indexOf(s) != -1) {
+        return true;
+    }
+    return  false;
+}
+
+bool MainWindow::isOverlapped (int col, QString set){
+    for (int i = 0; i < accepted[col][set].length(); ++i){
+        if (!selectedOnes[accepted[col][set][i]]){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+QString MainWindow::reverse(QString s){
+    QString ans = "";
+    for (int i = s.length()-1; i>=0; --i){
+        ans+=s[i];
+    }
+    return ans;
+}
+
+bool MainWindow::checkDubl(QStringList list){
+    int flag;
+    for (int i = 0; i < answers[minLen].length(); ++i){
+        flag = 1;
+        for (int j = 0; j < list.length(); ++j){
+            if (answers[minLen][i][j] != list[j]){
+                flag = 0;
+            }
+        }
+        if (flag) return false;
+    }
+    return true;
+}
+
+QString MainWindow::getTerm(QString head, QString val){
+    QString ans;
+    for (int i = 0; i < val.length(); ++i){
+        if(val[i] == "1"){
+            ans+=head[i];
+        } else {
+            ans+="!"+head[i];
+        }
+    }
+    return ans;
+}
+
+
+void MainWindow::updateVarCount(int x) {
+    varCount = x;
+    varCountp2 = pow(2,x);
+    for(int i = 0; i < x; ++i){
+        assoc[varLbl[i]] = x-i-1;
+    }
+}
+
+
+QStringList MainWindow::getSimpleColumn(QString s){
+    int x = assoc[s];
+    QStringList ans;
+    while(ans.length() < varCountp2){
+        for (int i = 0; i < pow(2,x); ++i){
+            ans<<"0";
+        }
+        for(int i = 0; i < pow(2,x); ++i){
+            ans<<"1";
+        }
+    }
+    return ans;
+}
+
+QStringList MainWindow::getColumn(QString s){
+    QStringList ans;
+    for (int i = 0; i < varCountp2; ++i){
+        ans << "";
+    }
+    for(int i = 0; i < s.length(); ++i){
+        QStringList tmpColumn = getSimpleColumn(QString(s[i]));
+        for (int j = 0; j < varCountp2; ++j){
+            ans[j]+=tmpColumn[j];
+        }
+    }
+    return ans;
+}
+
+
+QString MainWindow::get2from10(QString s){
+    long long num = s.toLongLong();
+    QString ans ="";
+    while (num!=0){
+        QString s1;
+        s1.setNum(num%2);
+        ans = s1+ans;
+        num/=2;
+    }
+    return ans;
+}
+
+QString MainWindow::get10from2 (QString s){
+    long long ansNum = 0;
+    for (int i = s.length()-1; i>=0; --i){
+        ansNum+=(QString(s[i]).toInt())*pow(2,i);
+    }
+    QString ansStr;
+    ansStr.setNum(ansNum);
+    return ansStr;
 }
 
 
@@ -322,32 +308,21 @@ void MainWindow::certainMDNF(){
     QMovie * mov = new QMovie(":img/loading.gif");
     lblGif->setMovie(mov);
     mov->start();
-    lbl->setText("Загрузка...");
+    lbl->setText("Loading...");
     QStringList garbageList;
     findMDNF(0, garbageList,0, 0);
-
-
     QString s1, s2;
     s1.setNum(minLen);
     s2.setNum(answers[minLen].length());
     if (minLen == 0){
         s2.setNum(0);
     }
-    QString strr = "Длина: " + s1 + "    Кол-во: "+s2+"\n";
+    QString strr = "Length: " + s1 + "    Count: "+s2+"\n";
     for (int i = 0; i < answers[minLen].length(); ++i){
         strr += answers[minLen][i].join(" v ") + "\n";
     }
     lbl->setText(strr);
     lblGif->clear();
-}
-
-
-
-
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 
@@ -358,7 +333,7 @@ void MainWindow::on_btnApply_clicked()
     if(ui->r1->isChecked()){
         stringInput = ui->funcNumberInput1->text();
         if (!QRegExp("[10]*").exactMatch(stringInput)){
-            QMessageBox::about(this, "Warning!", "Некорректное значение");
+            QMessageBox::about(this, "Warning!", "Incorrect value");
             return;
         }
         for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
@@ -368,7 +343,7 @@ void MainWindow::on_btnApply_clicked()
     } else if (ui->r2->isChecked()){
         stringInput = get2from10(ui->funcNumberInput2->text());
         if (!QRegExp("[0-9]*").exactMatch(stringInput)){
-            QMessageBox::about(this, "Warning!", "Некорректное значение");
+            QMessageBox::about(this, "Warning!", "Incorrect value");
             return;
         }
         for (int i = 0; pow(2,tmpVarCount)-stringInput.length()>0; ++i){
@@ -380,7 +355,7 @@ void MainWindow::on_btnApply_clicked()
         return;
     }
     if (stringInput.length() > pow(2,tmpVarCount)){
-        QMessageBox::about(this, "Warning!", "Некорректное значение");
+        QMessageBox::about(this, "Warning!", "Incorrect value");
         return;
     }
     updateVarCount(tmpVarCount);

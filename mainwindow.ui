@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>MDNF</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="src.qrc">
+    <normaloff>:/img/icon.ico</normaloff>:/img/icon.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTableWidget" name="mainTable">
@@ -53,7 +57,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Применить</string>
+     <string>Apply</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -66,7 +70,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>Количество переменных</string>
+     <string>Number of variables</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QTextBrowser" name="lblAns">
@@ -95,7 +102,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Применить</string>
+     <string>Apply</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
@@ -108,7 +115,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>Редактирование таблицы</string>
+     <string>Editing table</string>
     </property>
     <widget class="QLineEdit" name="funcNumberInput1">
      <property name="geometry">
@@ -130,7 +137,10 @@
       </rect>
      </property>
      <property name="text">
-      <string>Число-функция (10)</string>
+      <string>Number-function (10)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
     <widget class="QLabel" name="label_2">
@@ -143,7 +153,10 @@
       </rect>
      </property>
      <property name="text">
-      <string>Число-функция (2)</string>
+      <string>Number-funciton (2)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
     <widget class="QLineEdit" name="funcNumberInput2">
@@ -234,6 +247,8 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="src.qrc"/>
+ </resources>
  <connections/>
 </ui>
